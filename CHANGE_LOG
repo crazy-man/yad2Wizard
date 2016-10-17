@@ -1,0 +1,6 @@
+2016-10-18
+yad2Magic v0.0.1
+-----------------------------
+ - Initial release.
+	Application consists of pop_up.py which is responsible for popping up ads
+	and yad2Wizard.py - GUI window written using PyQT5, which also handles scheduling. 
