@@ -1,4 +1,5 @@
 import logging
+import os
 from collections import defaultdict
 from logging.handlers import RotatingFileHandler
 
@@ -6,13 +7,15 @@ from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.keys import Keys
 
-from common import Settings, Connector
+from common import Settings, Connector, prettify_string, home, init_logging
 
 
 class PopUpper:
-    def __init__(self, driver, settings):
-        self.driver = driver
-        self.settings = settings
+    def __init__(self, driver=None, settings=None):
+        self.driver = webdriver.Chrome() if driver is None else driver
+        self.settings = Settings().read() if settings is None else settings
+        self.connector = Connector(self.driver, self.settings)
+
         self.main_tab = self.driver.current_window_handle
         self.curr_tab = self.main_tab
         self.result = defaultdict(lambda: 0)
@@ -43,7 +46,8 @@ class PopUpper:
         # here we exclude the first and the last row, since those are just table header and footer
         ads_rows = ads_container.find_elements_by_tag_name("tr")[1:-1]
         for ad_row in ads_rows:
-            ad_row.click()
+            details_close = ad_row.find_elements_by_tag_name("td")[-1]
+            details_close.click()
             # now, row should be expanded, let's find pop-up button inside IFRAME (WTF?!)
             iframe = ads_container.find_element_by_tag_name('iframe')
             self.driver.switch_to_frame(iframe)
@@ -63,38 +67,26 @@ class PopUpper:
 
             # let's go back to current tab
             self.driver.switch_to_window(self.curr_tab)
-            ad_row.find_element_by_link_text("סגור").click()
+            details_close.click()
+
+    def run(self):
+        try:
+            self.connector.login()
+            res = self.pop_up_sections()
+            self.connector.logout()
+        finally:
+            self.driver.close()
+        return res
 
 
 def main():
-    log_formatter = logging.Formatter('%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
-    logFile = 'pop_up.log'
-
-    my_handler = RotatingFileHandler(logFile, mode='a', maxBytes=5 * 1024 * 1024,
-                                     backupCount=0, encoding="UTF-8", delay=0)
-    my_handler.setFormatter(log_formatter)
-    my_handler.setLevel(logging.INFO)
-
-    app_log = logging.getLogger()
-    app_log.setLevel(logging.INFO)
-
-    app_log.addHandler(my_handler)
-
+    init_logging(__file__)
     logging.info("Starting pop upper")
 
-    driver = webdriver.Chrome()
-    settings = Settings().read()
+    pop_upper = PopUpper()
+    res = pop_upper.run()
 
-    connector = Connector(driver, settings)
-    pop_upper = PopUpper(driver, settings)
-
-    try:
-        connector.login()
-        res = pop_upper.pop_up_sections()
-        connector.logout()
-    finally:
-        driver.close()
-    msg = "Result: {}".format(", ".join(["{}: {}".format(k, v) for k, v in res.items()]))
+    msg = "Result: {}".format(", ".join(["{}: {}".format(prettify_string(k), v) for k, v in res.items()]))
     logging.info(msg)
     print(msg)
 

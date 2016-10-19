@@ -1,9 +1,9 @@
-# yad2Wizard v0.0.1
+# yad2Wizard v0.0.2
 
 yad2Wizard is an open source application for popping up ads on popular Israeli website yad2 for free.
 
 Currently application consists of:
- * pop_up.py - performs pop up of ads
+ * pop_up.py - command line standalone that performs pop up of ads
  * yad2Wizard.py - GUI window written using PyQT5, which also handles scheduling.
 
 Currently it is only tested on Windows 10.

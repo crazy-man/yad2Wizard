@@ -1,15 +1,37 @@
 import configparser
 import logging
+import os
 import re
-from urllib.parse import urljoin
+from logging.handlers import RotatingFileHandler
 
+from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 
 
+def home(filename):
+    return os.path.abspath(os.path.join(os.path.dirname(__file__), filename))
+
+
+def init_logging(filename):
+    log_formatter = logging.Formatter('%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
+    log_file = home(os.path.splitext(filename)[0] + '.log')
+    my_handler = RotatingFileHandler(log_file, mode='a', maxBytes=5 * 1024 * 1024,
+                                     backupCount=0, encoding="UTF-8", delay=0)
+    my_handler.setFormatter(log_formatter)
+    my_handler.setLevel(logging.INFO)
+    app_log = logging.getLogger()
+    app_log.setLevel(logging.INFO)
+    app_log.addHandler(my_handler)
+
+
+def prettify_string(string):
+    return ' '.join(x.capitalize() or '_' for x in string.split('_'))
+
+
 class Connector:
-    def __init__(self, driver, settings):
-        self.driver = driver
-        self.settings = settings
+    def __init__(self, driver=None, settings=None):
+        self.driver = webdriver.Chrome() if driver is None else driver
+        self.settings = Settings().read() if settings is None else settings
 
     def login(self, username=None, password=None):
         if not username:
@@ -54,7 +76,7 @@ class Validate:
 
 
 class Settings:
-    def __init__(self, settings_file="settings.ini"):
+    def __init__(self, settings_file=home("settings.ini")):
         self.settings_file = settings_file
 
     def read(self):

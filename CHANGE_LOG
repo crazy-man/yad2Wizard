@@ -1,3 +1,10 @@
+2016-10-19
+yad2Magic v0.0.2
+-----------------------------
+ - Fixed bugs by using better xpath selectors
+ - Improved logging
+ - Moved interval to settings file
+
 2016-10-18
 yad2Magic v0.0.1
 -----------------------------
