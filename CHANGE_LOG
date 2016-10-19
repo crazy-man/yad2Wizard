@@ -1,12 +1,12 @@
 2016-10-19
-yad2Magic v0.0.2
+yad2Wizard v0.0.2
 -----------------------------
  - Fixed bugs by using better xpath selectors
  - Improved logging
  - Moved interval to settings file
 
 2016-10-18
-yad2Magic v0.0.1
+yad2Wizard v0.0.1
 -----------------------------
  - Initial release.
 	Application consists of pop_up.py which is responsible for popping up ads
