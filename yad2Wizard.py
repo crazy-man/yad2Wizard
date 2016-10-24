@@ -10,7 +10,6 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QMessageBox
 from PyQt5.QtWidgets import QSpacerItem
 from PyQt5.QtWidgets import qApp
-from selenium import webdriver
 
 from common import Validate, Settings, Connector, prettify_string, init_logging
 from pop_up import PopUpper
@@ -44,6 +43,7 @@ class Ui(QtWidgets.QMainWindow):
             self.license = l.read()
         with open('VERSION', 'r') as v:
             self.version = v.read()
+
         self.username.setText(self.settings["User"]["name"])
         self.password.setText(self.settings["User"]["pass"])
 
@@ -92,17 +92,16 @@ class Ui(QtWidgets.QMainWindow):
             self.show_message(str(ve))
             return
 
-        driver = webdriver.Chrome()
-        connector = Connector(driver, self.settings)
+        connector = Connector(settings=self.settings)
 
         try:
             connector.login(username, password)
             connector.logout()
             self.show_message("Connected Successfully!")
-        except RuntimeError as re:
-            self.show_message(str(re))
+        except Exception as e:
+            self.show_message(str(e))
         finally:
-            driver.close()
+            connector.driver.close()
 
     def save_credentials_click(self):
         self.show_message("Saving credentials")
@@ -140,8 +139,13 @@ class Ui(QtWidgets.QMainWindow):
 
     def run_periodically(self):
         self.pop_upper = PopUpper()
-        res = self.pop_upper.run()
-        msg = "Result: {}".format(", ".join(["{}: {}".format(prettify_string(k), v) for k, v in res.items()]))
+        try:
+            res = self.pop_upper.run()
+            msg = "Result: {}".format(", ".join(["{}: {}".format(prettify_string(k), v) for k, v in res.items()]))
+        except Exception as e:
+            logging.exception(e)
+            msg = str(e)
+
         timeout = self.settings.getfloat("Timeout", "period") * 60 + 60 * random.randint(1, self.settings.getint("Timeout", "random"))
         next_run = datetime.datetime.now() + datetime.timedelta(seconds=timeout)
         self.show_message(msg + " | Next run at {}".format(next_run.strftime("%Y-%m-%d %H:%M:%S")))

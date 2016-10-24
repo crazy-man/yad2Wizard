@@ -1,3 +1,8 @@
+2016-10-24
+yad2Wizard v0.0.3
+-----------------------------
+ - Switched to mobile version of yad2 website.(much better selectors, elements have classes, ids, etc)
+
 2016-10-19
 yad2Wizard v0.0.2
 -----------------------------

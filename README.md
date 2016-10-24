@@ -1,4 +1,4 @@
-# yad2Wizard v0.0.2
+# yad2Wizard v0.0.3
 
 yad2Wizard is an open source application for popping up ads on popular Israeli website yad2 for free.
 

@@ -2,26 +2,42 @@ import configparser
 import logging
 import os
 import re
+import urllib
 from logging.handlers import RotatingFileHandler
 
+import time
 from selenium import webdriver
-from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.chrome.options import Options
 
 
 def home(filename):
     return os.path.abspath(os.path.join(os.path.dirname(__file__), filename))
 
 
+def get_chrome_options():
+    mobile_emulation = {
+        "deviceMetrics": {"width": 360, "height": 640, "pixelRatio": 3.0},
+        "userAgent": "Mozilla/5.0 (Linux; Android 4.2.1; en-us; Nexus 5 Build/JOP40D) AppleWebKit/535.19 (KHTML, like Gecko) Chrome/18.0.1025.166 Mobile Safari/535.19"}
+    chrome_options = Options()
+    chrome_options.add_experimental_option("mobileEmulation", mobile_emulation)
+    chrome_options.add_argument("window-size=380,660")
+    return chrome_options
+
+
 def init_logging(filename):
     log_formatter = logging.Formatter('%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
     log_file = home(os.path.splitext(filename)[0] + '.log')
-    my_handler = RotatingFileHandler(log_file, mode='a', maxBytes=5 * 1024 * 1024,
+    file_handler = RotatingFileHandler(log_file, mode='a', maxBytes=5 * 1024 * 1024,
                                      backupCount=0, encoding="UTF-8", delay=0)
-    my_handler.setFormatter(log_formatter)
-    my_handler.setLevel(logging.INFO)
+    file_handler.setFormatter(log_formatter)
+    file_handler.setLevel(logging.INFO)
+    console_handler = logging.StreamHandler()
+    console_handler.setFormatter(log_formatter)
+    console_handler.setLevel(logging.DEBUG)
     app_log = logging.getLogger()
     app_log.setLevel(logging.INFO)
-    app_log.addHandler(my_handler)
+    app_log.addHandler(file_handler)
+    app_log.addHandler(console_handler)
 
 
 def prettify_string(string):
@@ -30,7 +46,7 @@ def prettify_string(string):
 
 class Connector:
     def __init__(self, driver=None, settings=None):
-        self.driver = webdriver.Chrome() if driver is None else driver
+        self.driver = webdriver.Chrome(chrome_options=get_chrome_options()) if driver is None else driver
         self.settings = Settings().read() if settings is None else settings
 
     def login(self, username=None, password=None):
@@ -40,8 +56,7 @@ class Connector:
             password = self.settings["User"]["pass"]
 
         self.driver.get(self.settings["Pages"]["login"])
-
-        username_field = self.driver.find_element_by_id("userName")
+        username_field = self.driver.find_element_by_id("email")
         username_field.clear()
         username_field.send_keys(username)
 
@@ -49,15 +64,17 @@ class Connector:
         password_field.clear()
         password_field.send_keys(password)
 
-        password_field.send_keys(Keys.RETURN)
-
-        if self.driver.current_url != self.settings["Pages"]["order"]:
+        self.driver.find_element_by_class_name("login-button").click()
+        # selenium won't wait till the page is loaded. for now, just go to sleep for a while(might be dangerous):
+        time.sleep(self.settings.getfloat("Misc", "request_timeout"))
+        if urllib.parse.urlparse(self.driver.current_url).path != urllib.parse.urlparse(self.settings["Pages"]["order"]).path:
             logging.info("Failed to log in, current url: " + self.driver.current_url)
             raise RuntimeError("Failed to log in")
 
     def logout(self):
         self.driver.get(self.settings["Pages"]["logout"])
-        if self.driver.current_url != self.settings["Domain"]["home"]:
+        time.sleep(self.settings.getfloat("Misc", "request_timeout"))
+        if urllib.parse.urlparse(self.driver.current_url).path != urllib.parse.urlparse(self.settings["Pages"]["login"]).path:
             logging.info("Failed to log out, current url: " + self.driver.current_url)
             raise RuntimeError("Failed to log out")
 
