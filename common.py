@@ -56,11 +56,11 @@ class Connector:
             password = self.settings["User"]["pass"]
 
         self.driver.get(self.settings["Pages"]["login"])
-        username_field = self.driver.find_element_by_id("email")
+        username_field = self.driver.find_element_by_id(self.settings["Elements"]["login_username_id"])
         username_field.clear()
         username_field.send_keys(username)
 
-        password_field = self.driver.find_element_by_id("password")
+        password_field = self.driver.find_element_by_id(self.settings["Elements"]["login_password_id"])
         password_field.clear()
         password_field.send_keys(password)
 
