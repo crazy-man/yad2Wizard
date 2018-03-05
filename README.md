@@ -14,7 +14,7 @@ Prerequisites:
  * [Python >= 3.4.x](https://www.python.org/downloads/) - make sure to include pip
  * selenium framework with python bindings (pip install selenium)
  * [Google Chrome browser](https://www.google.com/chrome/browser/desktop/index.html)
- * chromedriver(download executable from [here](http://chromedriver.storage.googleapis.com/2.24/chromedriver_win32.zip) and drop somewhere in your PATH)
+ * chromedriver(download executable from [here](https://sites.google.com/a/chromium.org/chromedriver/downloads) and drop somewhere in your PATH)
  * [PyQT5](https://sourceforge.net/projects/pyqt/files/latest/download)
 
 Usage:
