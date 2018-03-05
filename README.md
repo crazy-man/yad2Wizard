@@ -1,4 +1,4 @@
-# yad2Wizard v0.0.3
+# yad2Wizard v0.0.4
 
 yad2Wizard is an open source application for popping up ads on popular Israeli website yad2 for free.
 
@@ -11,7 +11,7 @@ Currently it is only tested on Windows 10.
 Installation:
 
 Prerequisites:
- * [Python 3.5.2](https://www.python.org/ftp/python/3.5.2/python-3.5.2.exe) - make sure to include pip
+ * [Python >= 3.4.x](https://www.python.org/downloads/) - make sure to include pip
  * selenium framework with python bindings (pip install selenium)
  * [Google Chrome browser](https://www.google.com/chrome/browser/desktop/index.html)
  * chromedriver(download executable from [here](http://chromedriver.storage.googleapis.com/2.24/chromedriver_win32.zip) and drop somewhere in your PATH)
